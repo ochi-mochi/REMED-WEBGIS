@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
+        <style>
+        #map {
+            width: 1325px;
+            height: 817px;
+        }
+        </style>
+        <title>Keterjangkauan Kampus Kota Magelang</title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/multi-style-layer.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
+        <script src="data/Keterjangkauan_1.js"></script>
+        <script src="data/Jalan_2.js"></script>
+        <script src="data/RutePejalanKaki_3.js"></script>
+        <script src="data/KampusMagelang_4.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+            highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[-7.518962899997776,110.12574415807477],[-7.407674911636801,110.30639938335297]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // add class to format popup if it contains media
+		function addClassToPopupIfMedia(content, popup) {
+			var tempDiv = document.createElement('div');
+			tempDiv.innerHTML = content;
+			if (tempDiv.querySelector('td img')) {
+				popup._contentNode.classList.add('media');
+					// Delay to force the redraw
+					setTimeout(function() {
+						popup.update();
+					}, 10);
+			} else {
+				popup._contentNode.classList.remove('media');
+			}
+		}
+        var title = new L.Control({'position':'topright'});
+        title.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info');
+            this.update();
+            return this._div;
+        };
+        title.update = function () {
+            this._div.innerHTML = '<h2>Keterjangkauan Kampus Kota Magelang</h2>';
+        };
+        title.addTo(map);
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_Positron_0');
+        map.getPane('pane_Positron_0').style.zIndex = 400;
+        var layer_Positron_0 = L.tileLayer('https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+            pane: 'pane_Positron_0',
+            opacity: 1.0,
+            attribution: '<a href="https://cartodb.com/basemaps/">Map tiles by CartoDB, under CC BY 3.0. Data by OpenStreetMap, under ODbL.</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_Positron_0;
+        map.addLayer(layer_Positron_0);
+        function pop_Keterjangkauan_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Keterangan'] !== null ? autolinker.link(feature.properties['Keterangan'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Keterjangkauan_1_0(feature) {
+            switch(String(feature.properties['Keterangan'])) {
+                case 'Terjangkau':
+                    return {
+                pane: 'pane_Keterjangkauan_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(212,61,139,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Tidak Terjangkau':
+                    return {
+                pane: 'pane_Keterjangkauan_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,203,226,0.8196078431372549)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_Keterjangkauan_1');
+        map.getPane('pane_Keterjangkauan_1').style.zIndex = 401;
+        map.getPane('pane_Keterjangkauan_1').style['mix-blend-mode'] = 'normal';
+        var layer_Keterjangkauan_1 = new L.geoJson(json_Keterjangkauan_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Keterjangkauan_1',
+            layerName: 'layer_Keterjangkauan_1',
+            pane: 'pane_Keterjangkauan_1',
+            onEachFeature: pop_Keterjangkauan_1,
+            style: style_Keterjangkauan_1_0,
+        });
+        bounds_group.addLayer(layer_Keterjangkauan_1);
+        map.addLayer(layer_Keterjangkauan_1);
+        function pop_Jalan_2(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td class="visible-with-data" id="REMARK"colspan="2"><strong>REMARK</strong><br />' + (feature.properties['REMARK'] !== null ? autolinker.link(feature.properties['REMARK'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Jalan_2_0() {
+            return {
+                pane: 'pane_Jalan_2',
+                opacity: 1,
+                color: 'rgba(104,104,104,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Jalan_2');
+        map.getPane('pane_Jalan_2').style.zIndex = 402;
+        map.getPane('pane_Jalan_2').style['mix-blend-mode'] = 'normal';
+        var layer_Jalan_2 = new L.geoJson(json_Jalan_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Jalan_2',
+            layerName: 'layer_Jalan_2',
+            pane: 'pane_Jalan_2',
+            onEachFeature: pop_Jalan_2,
+            style: style_Jalan_2_0,
+        });
+        bounds_group.addLayer(layer_Jalan_2);
+        map.addLayer(layer_Jalan_2);
+        function pop_RutePejalanKaki_3(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td class="visible-with-data" id="start"colspan="2"><strong>start</strong><br />' + (feature.properties['start'] !== null ? autolinker.link(feature.properties['start'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_RutePejalanKaki_3_0() {
+            return {
+                pane: 'pane_RutePejalanKaki_3',
+                opacity: 1,
+                color: 'rgba(255,211,35,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_RutePejalanKaki_3');
+        map.getPane('pane_RutePejalanKaki_3').style.zIndex = 403;
+        map.getPane('pane_RutePejalanKaki_3').style['mix-blend-mode'] = 'normal';
+        var layer_RutePejalanKaki_3 = new L.geoJson(json_RutePejalanKaki_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_RutePejalanKaki_3',
+            layerName: 'layer_RutePejalanKaki_3',
+            pane: 'pane_RutePejalanKaki_3',
+            onEachFeature: pop_RutePejalanKaki_3,
+            style: style_RutePejalanKaki_3_0,
+        });
+        bounds_group.addLayer(layer_RutePejalanKaki_3);
+        map.addLayer(layer_RutePejalanKaki_3);
+        function pop_KampusMagelang_4(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td class="visible-with-data" id="Name"colspan="2"><strong>Name</strong><br />' + (feature.properties['Name'] !== null ? autolinker.link(feature.properties['Name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Foto</th>\
+                        <td>' + (feature.properties['Foto'] !== null ? '<img src="images/' + String(feature.properties['Foto']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_KampusMagelang_4_0() {
+            return {
+                pane: 'pane_KampusMagelang_4',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,255,255,1.0)',
+                interactive: true,
+            }
+        }
+        function style_KampusMagelang_4_1() {
+            return {
+                pane: 'pane_KampusMagelang_4',
+                radius: 2.1875,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(0,0,0,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_KampusMagelang_4');
+        map.getPane('pane_KampusMagelang_4').style.zIndex = 404;
+        map.getPane('pane_KampusMagelang_4').style['mix-blend-mode'] = 'normal';
+        var layer_KampusMagelang_4 = new L.geoJson.multiStyle(json_KampusMagelang_4, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_KampusMagelang_4',
+            layerName: 'layer_KampusMagelang_4',
+            pane: 'pane_KampusMagelang_4',
+            onEachFeature: pop_KampusMagelang_4,
+            pointToLayers: [function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_KampusMagelang_4_0(feature));
+            },function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_KampusMagelang_4_1(feature));
+            },
+        ]});
+        bounds_group.addLayer(layer_KampusMagelang_4);
+        map.addLayer(layer_KampusMagelang_4);
+        var osmGeocoder = new L.Control.Geocoder({
+            collapsed: true,
+            position: 'topleft',
+            text: 'Search',
+            title: 'Testing'
+        }).addTo(map);
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .className += ' fa fa-search';
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .title += 'Search for a place';
+        var baseMaps = {};
+        var overlaysTree = [
+            {label: '<img src="legend/KampusMagelang_4.png" /> Kampus Magelang', layer: layer_KampusMagelang_4},
+            {label: '<img src="legend/RutePejalanKaki_3.png" /> Rute Pejalan Kaki', layer: layer_RutePejalanKaki_3},
+            {label: '<img src="legend/Jalan_2.png" /> Jalan', layer: layer_Jalan_2},
+            {label: 'Keterjangkauan<br /><table><tr><td style="text-align: center;"><img src="legend/Keterjangkauan_1_Terjangkau0.png" /></td><td>Terjangkau</td></tr><tr><td style="text-align: center;"><img src="legend/Keterjangkauan_1_TidakTerjangkau1.png" /></td><td>Tidak Terjangkau</td></tr></table>', layer: layer_Keterjangkauan_1},
+            {label: "Positron", layer: layer_Positron_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: false, 
+        });
+        lay.addTo(map);
+        setBounds();
+        </script>
+    </body>
+</html>
